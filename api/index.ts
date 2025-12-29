@@ -1,0 +1,40 @@
+import express from 'express'
+import cors from 'cors'
+import dotenv from 'dotenv'
+import authRoutes from '../server/routes/auth.js'
+import repositoryRoutes from '../server/routes/repositories.js'
+import aiRoutes from '../server/routes/ai.js'
+import integrationRoutes from '../server/routes/integrations.js'
+import usersRoutes from '../server/routes/users.js'
+
+dotenv.config()
+
+const app = express()
+
+const corsOrigins = [
+  'http://localhost:5173',
+  'http://127.0.0.1:5173',
+  'http://localhost:3000',
+  'https://gitverse-1tl3z6dxh-nisshchayas-projects.vercel.app',
+  'https://gitverse-two.vercel.app',
+]
+
+app.use(cors({ origin: corsOrigins, credentials: true }))
+app.use(express.json())
+
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok', message: 'GitVerse API is running' })
+})
+
+app.use('/api/auth', authRoutes)
+app.use('/api/repositories', repositoryRoutes)
+app.use('/api/ai', aiRoutes)
+app.use('/api/integrations', integrationRoutes)
+app.use('/api/users', usersRoutes)
+
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  console.error('Error:', err)
+  res.status(500).json({ error: 'Internal server error' })
+})
+
+export default app
