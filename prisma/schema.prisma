@@ -1,0 +1,161 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id                    Int          @id @default(autoincrement())
+  email                 String       @unique
+  passwordHash          String       @map("password_hash")
+  name                  String
+  avatarUrl             String?      @map("avatar_url")
+  emailNotifications    Boolean      @default(true) @map("email_notifications")
+  pushNotifications     Boolean      @default(false) @map("push_notifications")
+  weeklyDigest          Boolean      @default(true) @map("weekly_digest")
+  createdAt             DateTime     @default(now()) @map("created_at")
+  updatedAt             DateTime     @updatedAt @map("updated_at")
+  repositories          Repository[]
+
+  @@map("users")
+}
+
+model Repository {
+  id             Int           @id @default(autoincrement())
+  name           String
+  url            String
+  description    String?
+  defaultBranch  String        @default("main") @map("default_branch")
+  isPrivate      Boolean       @default(false) @map("is_private")
+  stars          Int           @default(0)
+  forks          Int           @default(0)
+  size           Int           @default(0) // Size in bytes
+  lastAnalyzedAt DateTime?     @map("last_analyzed_at")
+  status         String        @default("pending") // pending, analyzing, completed, failed
+  userId         Int           @map("user_id")
+  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt      DateTime      @default(now()) @map("created_at")
+  updatedAt      DateTime      @updatedAt @map("updated_at")
+  branches       Branch[]
+  commits        Commit[]
+  files          File[]
+  contributors   Contributor[]
+  languages      Language[]
+
+  @@map("repositories")
+}
+
+model Branch {
+  id           Int        @id @default(autoincrement())
+  name         String
+  isDefault    Boolean    @default(false) @map("is_default")
+  isProtected  Boolean    @default(false) @map("is_protected")
+  commitCount  Int        @default(0) @map("commit_count")
+  lastCommitAt DateTime?  @map("last_commit_at")
+  repositoryId Int        @map("repository_id")
+  repository   Repository @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
+  createdAt    DateTime   @default(now()) @map("created_at")
+  updatedAt    DateTime   @updatedAt @map("updated_at")
+
+  @@unique([repositoryId, name])
+  @@map("branches")
+}
+
+model Commit {
+  id           Int        @id @default(autoincrement())
+  hash         String
+  shortHash    String     @map("short_hash")
+  message      String
+  description  String?
+  authorName   String     @map("author_name")
+  authorEmail  String     @map("author_email")
+  authorAvatar String?    @map("author_avatar")
+  committedAt  DateTime   @map("committed_at")
+  branch       String
+  additions    Int        @default(0)
+  deletions    Int        @default(0)
+  filesChanged Int        @default(0) @map("files_changed")
+  repositoryId Int        @map("repository_id")
+  repository   Repository @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
+  createdAt    DateTime   @default(now()) @map("created_at")
+  fileChanges  FileChange[]
+
+  @@unique([repositoryId, hash])
+  @@index([repositoryId, committedAt])
+  @@map("commits")
+}
+
+model File {
+  id           Int          @id @default(autoincrement())
+  path         String
+  name         String
+  extension    String?
+  size         Int          @default(0)
+  language     String?
+  lines        Int          @default(0)
+  repositoryId Int          @map("repository_id")
+  repository   Repository   @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
+  createdAt    DateTime     @default(now()) @map("created_at")
+  updatedAt    DateTime     @updatedAt @map("updated_at")
+  changes      FileChange[]
+
+  @@unique([repositoryId, path])
+  @@index([repositoryId])
+  @@index([path])
+  @@map("files")
+}
+
+model FileChange {
+  id        Int      @id @default(autoincrement())
+  path      String
+  additions Int      @default(0)
+  deletions Int      @default(0)
+  changeType String  @map("change_type") // added, modified, deleted
+  commitId  Int      @map("commit_id")
+  commit    Commit   @relation(fields: [commitId], references: [id], onDelete: Cascade)
+  fileId    Int?     @map("file_id")
+  file      File?    @relation(fields: [fileId], references: [id], onDelete: SetNull)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("file_changes")
+}
+
+model Contributor {
+  id           Int        @id @default(autoincrement())
+  name         String
+  email        String
+  avatar       String?
+  commits      Int        @default(0)
+  additions    Int        @default(0)
+  deletions    Int        @default(0)
+  percentage   Float      @default(0)
+  firstCommit  DateTime   @map("first_commit")
+  lastCommit   DateTime   @map("last_commit")
+  repositoryId Int        @map("repository_id")
+  repository   Repository @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
+  createdAt    DateTime   @default(now()) @map("created_at")
+  updatedAt    DateTime   @updatedAt @map("updated_at")
+
+  @@unique([repositoryId, email])
+  @@map("contributors")
+}
+
+model Language {
+  id           Int        @id @default(autoincrement())
+  name         String
+  percentage   Float
+  bytes        Int        @default(0)
+  lines        Int        @default(0)
+  color        String?
+  repositoryId Int        @map("repository_id")
+  repository   Repository @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
+  createdAt    DateTime   @default(now()) @map("created_at")
+
+  @@unique([repositoryId, name])
+  @@map("languages")
+}
