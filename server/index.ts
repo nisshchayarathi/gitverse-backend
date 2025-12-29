@@ -18,7 +18,8 @@ const corsOrigins = [
   'http://localhost:5173',
   'http://127.0.0.1:5173',
   'http://localhost:3000',
-  'https://gitverse-jqr18xdjp-nisshchayas-projects.vercel.app', // Current frontend
+  'https://gitverse-1tl3z6dxh-nisshchayas-projects.vercel.app',
+  'https://gitverse-two.vercel.app',
 ]
 
 app.use(

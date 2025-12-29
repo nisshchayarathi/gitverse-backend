@@ -16,7 +16,8 @@ const corsOrigins = [
   'http://localhost:5173',
   'http://127.0.0.1:5173',
   'http://localhost:3000',
-  'https://gitverse-fm86gn7zg-nisshchayas-projects.vercel.app',
+  'https://gitverse-1tl3z6dxh-nisshchayas-projects.vercel.app',
+  'https://gitverse-two.vercel.app',
 ]
 
 app.use(cors({ origin: corsOrigins, credentials: true }))
