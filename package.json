@@ -1,7 +1,6 @@
 {
   "name": "gitverse-backend",
   "version": "1.0.0",
-  "type": "module",
   "scripts": {
     "dev": "npx tsx watch server/index.ts",
     "build": "npx prisma generate",
@@ -13,8 +12,8 @@
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
     "@prisma/adapter-neon": "^7.2.0",
-    "@prisma/adapter-pg": "^7.2.0",
     "@prisma/client": "^7.2.0",
+    "@prisma/adapter-pg": "^7.2.0",
     "axios": "^1.13.2",
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.5",
@@ -24,13 +23,13 @@
     "pg": "^8.13.1"
   },
   "devDependencies": {
-    "@types/bcryptjs": "^2.4.6",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^25.0.3",
+    "@types/bcryptjs": "^2.4.6",
     "@types/pg": "^8.11.10",
-    "@vercel/node": "^5.5.16",
+    "@vercel/node": "^3.2.25",
     "prisma": "^7.2.0",
     "tsx": "^4.21.0",
     "typescript": "^5.2.2"
