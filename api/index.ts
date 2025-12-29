@@ -1,11 +1,11 @@
 import express from 'express'
 import cors from 'cors'
 import dotenv from 'dotenv'
-import authRoutes from '../server/routes/auth'
-import repositoryRoutes from '../server/routes/repositories'
-import aiRoutes from '../server/routes/ai'
-import integrationRoutes from '../server/routes/integrations'
-import usersRoutes from '../server/routes/users'
+import authRoutes from '../server/routes/auth.js'
+import repositoryRoutes from '../server/routes/repositories.js'
+import aiRoutes from '../server/routes/ai.js'
+import integrationRoutes from '../server/routes/integrations.js'
+import usersRoutes from '../server/routes/users.js'
 
 dotenv.config()
 
