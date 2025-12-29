@@ -11,10 +11,5 @@
       "src": "/(.*)",
       "dest": "server/index.ts"
     }
-  ],
-  "env": {
-    "DATABASE_URL": "@database-url",
-    "GEMINI_API_KEY": "@gemini-api-key",
-    "JWT_SECRET": "@jwt-secret"
-  }
+  ]
 }
