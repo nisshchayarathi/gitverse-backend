@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { authMiddleware, AuthRequest } from '../middleware'
+import { authMiddleware, AuthRequest } from '../middleware.js'
 import { geminiService } from '../services/geminiService'
 import { repositoryService } from '../services/repositoryService'
 

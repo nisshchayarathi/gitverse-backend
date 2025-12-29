@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { authMiddleware, AuthRequest } from '../middleware'
+import { authMiddleware, AuthRequest } from '../middleware.js'
 import { GitHubService } from '../services/githubService'
 import { GitLabService } from '../services/gitlabService'
 import { BitbucketService } from '../services/bitbucketService'
