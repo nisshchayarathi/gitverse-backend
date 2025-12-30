@@ -1,43 +1,51 @@
-import 'dotenv/config'
-import { PrismaClient } from '@prisma/client'
-import { Pool } from 'pg'
-import { PrismaPg } from '@prisma/adapter-pg'
+// Vercel provides env vars; dotenv is only for local development.
+if (!process.env.VERCEL && process.env.NODE_ENV !== "production") {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    require("dotenv/config");
+  } catch {
+    // dotenv is optional in environments where it's not installed
+  }
+}
+import { PrismaClient } from "@prisma/client";
+import { Pool } from "pg";
+import { PrismaPg } from "@prisma/adapter-pg";
 
-const connectionString = process.env.DATABASE_URL
+const connectionString = process.env.DATABASE_URL;
 
 if (!connectionString) {
-  throw new Error('DATABASE_URL environment variable is not set')
+  throw new Error("DATABASE_URL environment variable is not set");
 }
 
 /**
  * Global cache to prevent multiple pools in serverless
  */
 const globalForPrisma = global as unknown as {
-  prisma?: PrismaClient
-  pool?: Pool
-}
+  prisma?: PrismaClient;
+  pool?: Pool;
+};
 
 if (!globalForPrisma.pool) {
   globalForPrisma.pool = new Pool({
     connectionString,
-    max: 5,                    // 🔑 NEVER more than 5 on Neon
+    max: 5, // 🔑 NEVER more than 5 on Neon
     idleTimeoutMillis: 30000,
     connectionTimeoutMillis: 5000,
-  })
+  });
 }
 
-const pool = globalForPrisma.pool
+const pool = globalForPrisma.pool;
 
-const adapter = new PrismaPg(pool)
+const adapter = new PrismaPg(pool);
 
 if (!globalForPrisma.prisma) {
   globalForPrisma.prisma = new PrismaClient({
     adapter,
-    log: ['error'],
-  })
+    log: ["error"],
+  });
 }
 
-const prisma = globalForPrisma.prisma
+const prisma = globalForPrisma.prisma;
 
-export default prisma
-export { prisma }
+export default prisma;
+export { prisma };
