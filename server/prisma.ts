@@ -1,51 +1,59 @@
 // Vercel provides env vars; dotenv is only for local development.
 if (!process.env.VERCEL && process.env.NODE_ENV !== "production") {
   try {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
     require("dotenv/config");
   } catch {
     // dotenv is optional in environments where it's not installed
   }
 }
+
 import { PrismaClient } from "@prisma/client";
 import { Pool } from "pg";
 import { PrismaPg } from "@prisma/adapter-pg";
 
-const connectionString = process.env.DATABASE_URL;
-
-if (!connectionString) {
-  throw new Error("DATABASE_URL environment variable is not set");
-}
-
 /**
- * Global cache to prevent multiple pools in serverless
+ * Global cache to prevent multiple pools in serverless.
+ *
+ * IMPORTANT: Prisma initialization is lazy so that a missing DATABASE_URL
+ * doesn't crash the serverless function during cold start/module load.
  */
 const globalForPrisma = global as unknown as {
   prisma?: PrismaClient;
   pool?: Pool;
 };
 
-if (!globalForPrisma.pool) {
-  globalForPrisma.pool = new Pool({
-    connectionString,
-    max: 5, // 🔑 NEVER more than 5 on Neon
-    idleTimeoutMillis: 30000,
-    connectionTimeoutMillis: 5000,
-  });
-}
+function initPrismaClient(): PrismaClient {
+  if (globalForPrisma.prisma) return globalForPrisma.prisma;
 
-const pool = globalForPrisma.pool;
+  const connectionString = process.env.DATABASE_URL;
+  if (!connectionString) {
+    throw new Error("DATABASE_URL environment variable is not set");
+  }
 
-const adapter = new PrismaPg(pool);
+  if (!globalForPrisma.pool) {
+    globalForPrisma.pool = new Pool({
+      connectionString,
+      max: 5, // 🔑 NEVER more than 5 on Neon
+      idleTimeoutMillis: 30000,
+      connectionTimeoutMillis: 5000,
+    });
+  }
 
-if (!globalForPrisma.prisma) {
+  const adapter = new PrismaPg(globalForPrisma.pool);
   globalForPrisma.prisma = new PrismaClient({
     adapter,
     log: ["error"],
   });
+
+  return globalForPrisma.prisma;
 }
 
-const prisma = globalForPrisma.prisma;
+const prisma = new Proxy({} as PrismaClient, {
+  get(_target, prop) {
+    const client = initPrismaClient() as any;
+    return client[prop];
+  },
+});
 
 export default prisma;
 export { prisma };
