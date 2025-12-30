@@ -3,36 +3,41 @@ import { PrismaClient } from '@prisma/client'
 import { Pool } from 'pg'
 import { PrismaPg } from '@prisma/adapter-pg'
 
-// Get DATABASE_URL from environment
 const connectionString = process.env.DATABASE_URL
-
-console.log('Loading Prisma with DATABASE_URL:', connectionString ? '✓ Set' : '✗ Missing')
 
 if (!connectionString) {
   throw new Error('DATABASE_URL environment variable is not set')
 }
 
-// Create PostgreSQL connection pool with timeout settings
-const pool = new Pool({
-  connectionString,
-  connectionTimeoutMillis: 10000,
-  idleTimeoutMillis: 30000,
-  max: 20,
-  min: 2,
-})
+/**
+ * Global cache to prevent multiple pools in serverless
+ */
+const globalForPrisma = global as unknown as {
+  prisma?: PrismaClient
+  pool?: Pool
+}
 
-// Handle pool errors
-pool.on('error', (err) => {
-  console.error('Unexpected pool error:', err)
-})
+if (!globalForPrisma.pool) {
+  globalForPrisma.pool = new Pool({
+    connectionString,
+    max: 5,                    // 🔑 NEVER more than 5 on Neon
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 5000,
+  })
+}
+
+const pool = globalForPrisma.pool
 
 const adapter = new PrismaPg(pool)
 
-// Create Prisma Client with PostgreSQL adapter
-const prisma = new PrismaClient({
-  adapter,
-  log: ['error', 'warn'],
-})
+if (!globalForPrisma.prisma) {
+  globalForPrisma.prisma = new PrismaClient({
+    adapter,
+    log: ['error'],
+  })
+}
+
+const prisma = globalForPrisma.prisma
 
 export default prisma
 export { prisma }
